@@ -3,6 +3,7 @@ import Link from "next/link";
 const navItems = [
   { href: "/", label: "Dashboard", icon: "📊" },
   { href: "/entregas", label: "Entregas", icon: "🚚" },
+  { href: "/zonas", label: "Zonas", icon: "🗺️" },
 ];
 
 export default function Sidebar() {

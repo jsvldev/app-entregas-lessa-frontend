@@ -43,7 +43,7 @@ export interface ZonaEntrega {
 }
 
 async function fetchApi<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`);
+  const res = await fetch(`${API_URL}${path}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`API ${res.status}: ${path}`);
   return res.json();
 }
@@ -73,6 +73,48 @@ export async function getEntregas(
 export async function getZonas(loja?: number): Promise<ZonaEntrega[]> {
   const params = loja ? `?codloja=${loja}` : "";
   return fetchApi<ZonaEntrega[]>(`/painel/zonas${params}`);
+}
+
+export interface ZonaClassificacao {
+  cidade_base: string;
+  bairro: string;
+  cep?: string | null;
+  grupo_entrega: string;
+  zona_proximidade: string;
+  tempo_entrega: string;
+  tipo_rota: string;
+  sla_minutos: number;
+  requer_confirmacao: boolean;
+  permite_entrega_automatica: boolean;
+  observacao?: string | null;
+}
+
+export interface ZonasCobertura {
+  total_canonicos: number;
+  total_mapeamentos: number;
+  zonas_cadastradas: number;
+  bairros_cobertos: number;
+  bairros_descobertos: number;
+  detalhes_descobertos: Array<{ bairro: string; codloja: number }>;
+}
+
+export async function getZonasCompleto(loja?: number): Promise<ZonasCobertura> {
+  const params = loja ? `?codloja=${loja}` : "";
+  return fetchApi<ZonasCobertura>(`/painel/zonas/completo${params}`);
+}
+
+export async function classificarZona(params: {
+  bairro: string;
+  codloja: number;
+  cep?: string;
+}): Promise<ZonaClassificacao | { erro: string; sugestao?: string }> {
+  const qs = new URLSearchParams();
+  qs.set("bairro", params.bairro);
+  qs.set("codloja", String(params.codloja));
+  if (params.cep) qs.set("cep", params.cep);
+  return fetchApi<ZonaClassificacao | { erro: string; sugestao?: string }>(
+    `/painel/zonas/classificar?${qs}`,
+  );
 }
 
 export async function getEntregadores() {
